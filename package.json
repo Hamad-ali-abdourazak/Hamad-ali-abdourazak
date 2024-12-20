@@ -1,13 +1,19 @@
 {
-  "name": "projet-poker",
+  "name": "planning-poker",
   "version": "1.0.0",
+  "description": "Planning Poker application",
+  "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "generate-docs": "jsdoc -c jsdoc.json"
   },
+  "author": "Hamad Ali Abdourazak",
+  "license": "MIT",
   "dependencies": {
-    "express": "^4.21.2"
+   
   },
   "devDependencies": {
-    "jest": "^29.7.0"
+    "jest": "^27.5.1",
+    "jsdoc": "^4.0.4"
   }
 }
