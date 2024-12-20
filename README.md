@@ -30,7 +30,8 @@ Clonez le dépôt GitHub sur votre machine locale :
 git clone https://github.com/Hamad-ali-abdourazak/Projet-Poker.git
 Étape 2 : Lancer l'application
 1.	Ouvrez le fichier index.html dans votre navigateur.
-2.	Optionnel : Installez l'extension Live Server pour votre éditeur de code (par exemple Visual Studio Code) afin de lancer l'application en local.
+2.	Optionnel :Installez l'extension Live Server pour votre éditeur de code 
+    (par exemple Visual Studio Code) afin de lancer l'application en local.
 ________________________________________
 Guide d'Utilisation
 Inscription
@@ -38,9 +39,9 @@ Inscription
 2.	Remplissez le formulaire avec un nom d'utilisateur et un mot de passe.
 3.	Cliquez sur "S'inscrire" pour créer un compte.
 Connexion
-1.	Cliquez sur le lien "Connexion" dans la barre de navigation.
-2.	Remplissez le formulaire avec votre nom d'utilisateur et votre mot de passe.
-3.	Cliquez sur "Se connecter" pour accéder à l'application.
+1.Cliquez sur le lien "Connexion" dans la barre de navigation.
+2.Remplissez le formulaire avec votre nom d'utilisateur et votre mot de passe.
+3.Cliquez sur "Se connecter" pour accéder à l'application.
 Commencer une Partie
 1.	Sur la page d'accueil, cliquez sur "Commencer une partie".
 2.	Configurez la partie : 
@@ -54,8 +55,8 @@ Reprendre une Partie
 2.	Chargez un fichier JSON contenant les tâches et les noms des utilisateurs pour reprendre la partie.
 ________________________________________
 Sauvegarde et Reprise de Partie
-•	json_progress.json : Contient l'état actuel de la partie (tâches restantes et noms des utilisateurs).
-•	json_results.json : Contient la liste des tâches et les votes finaux attribués par l'équipe.
+•json_progress.json :Contient l'état actuel de la partie (tâches restantes et noms des utilisateurs).
+•json_results.json : Contient la liste des tâches et les votes finaux attribués par l'équipe.
 ________________________________________
 Structure du Projet
 •	Pages HTML
