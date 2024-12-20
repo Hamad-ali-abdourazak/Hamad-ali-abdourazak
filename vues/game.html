@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Partie - Planning Poker</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background:linear-gradient(to right, rgba(255, 204, 204, 1), rgba(204, 230, 255, 1));
+      font-family: 'Arial', sans-serif;
+      color: #333;
+      padding-top: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
+
+    .main-content {
+      flex: 3;
+      margin-right: 20px;
+    }
+
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 600px;
+    }
+
+    .btn-primary {
+      background-color: #2d87f0;
+      border-radius: 50px;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      width: 100%;
+    }
+
+    .btn-primary:hover {
+      background-color: #1a63b1;
+    }
+
+    .card {
+      background-color: #ffffff;
+      border-radius: 10px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      background-color: #f1f1f1;
+      font-size: 1.3rem;
+    }
+
+    .card-footer {
+      text-align: center;
+    }
+
+    .player-card {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 10px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .chat-box {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 10px;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .chat-input {
+      margin-top: 10px;
+      display: flex;
+    }
+
+    .chat-input input {
+      flex-grow: 1;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="main-content">
+    <div class="card">
+      <div class="card-header">Informations sur la Partie</div>
+      <div class="card-body">
+        <p id="currentTask">Tâche à estimer : ...</p>
+        <p id="timer">Temps restant : <span id="time">60</span> secondes</p>
+
+        <div id="cards" class="d-flex justify-content-center flex-wrap gap-3">
+          <button class="btn btn-outline-primary" onclick="voteCard(1)">1</button>
+          <button class="btn btn-outline-primary" onclick="voteCard(2)">2</button>
+          <button class="btn btn-outline-primary" onclick="voteCard(3)">3</button>
+          <button class="btn btn-outline-primary" onclick="voteCard(5)">5</button>
+          <button class="btn btn-outline-primary" onclick="voteCard(8)">8</button>
+          <button class="btn btn-outline-primary" onclick="voteCard(13)">13</button>
+          <button class="btn btn-outline-primary" onclick="voteCard(20)">20</button>
+          <button class="btn btn-outline-primary" onclick="voteCard(40)">40</button>
+          <button class="btn btn-outline-primary" onclick="voteCard(100)">100</button>
+          <button class="btn btn-outline-danger" onclick="voteCard('cafe')">☕ Pause Café</button>
+        </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-primary" onclick="finishVoting()">Terminer le Vote</button>
+      </div>
+    </div>
+
+    <div class="card mt-4">
+      <div class="card-header">Joueurs</div>
+      <div class="card-body" id="playersList">
+        <!-- Les pseudos des joueurs seront affichés ici -->
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-container">
+    <div class="chat-box" id="chatBox">
+      <!-- Messages de discussion -->
+    </div>
+    <div class="chat-input">
+      <input type="text" id="chatMessage" class="form-control" placeholder="Tapez votre message...">
+      <button class="btn btn-primary" onclick="sendMessage()">Envoyer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Récupération des données sauvegardées
+  const players = JSON.parse(localStorage.getItem('playersNames'));
+  const rules = localStorage.getItem('gameRule');
+  const backlog = JSON.parse(localStorage.getItem('backlog'));
+
+  let currentIndex = 0;
+  let votes = [];
+  let currentPlayerIndex = 0;
+  let timer;
+  let cafeVotes = 0;
+  let firstRound = true;
+  let results = [];
+
+  // Affiche la tâche actuelle à estimer
+  function loadTask() {
+    document.getElementById("currentTask").innerText = `Tâche à estimer : ${backlog[currentIndex]}`;
+    startTimer();
+  }
+
+  // Fonction pour démarrer le chronomètre
+  function startTimer() {
+    let time = 60;
+    document.getElementById("time").innerText = time;
+    clearInterval(timer);
+    timer = setInterval(() => {
+      time--;
+      document.getElementById("time").innerText = time;
+      if (time <= 0) {
+        clearInterval(timer);
+        alert("Temps écoulé !");
+      }
+    }, 1000);
+  }
+
+  // Fonction pour enregistrer le vote du joueur
+  function voteCard(value) {
+    if (value === 'cafe') {
+      cafeVotes++;
+      alert(`Un joueur a demandé une pause café.`);
+      if (cafeVotes === players.length) {
+        alert("Pause demandée par tout le monde. Sauvegarde de l'état...");
+        saveProgress();
+        return;
+      }
+    } else {
+      votes.push(value);
+      alert(`Vote enregistré : ${value}`);
+    }
+    
+    currentPlayerIndex++;
+    if (currentPlayerIndex === players.length) {
+      evaluateVotes();
+      currentPlayerIndex = 0;
+    } else {
+      alert(`C'est au tour de ${players[currentPlayerIndex]} de voter.`);
+    }
+  }
+
+  // Fonction pour évaluer les votes
+  function evaluateVotes() {
+    let result = 0;
+    let unanimity = false;
+
+    if (firstRound) {
+      // Vérifie si tous les joueurs ont voté la même chose pour le premier tour
+      const uniqueVotes = new Set(votes);
+      if (uniqueVotes.size === 1) {
+        result = uniqueVotes.values().next().value;
+        alert(`Unanimité atteinte : ${result}`);
+        unanimity = true;
+      } else {
+        alert('Les votes ne sont pas unanimes. Passons à la règle choisie.');
+        votes = [];
+        firstRound = false;
+        currentPlayerIndex = 0;
+        return;
+      }
+    } else {
+      if (rules === 'moyenne') {
+        const sum = votes.reduce((acc, vote) => acc + vote, 0);
+        result = sum / votes.length;
+        alert(`Moyenne des votes : ${result}`);
+      } else if (rules === 'mediane') {
+        votes.sort((a, b) => a - b);
+        const mid = Math.floor(votes.length / 2);
+        result = votes.length % 2 !== 0 ? votes[mid] : (votes[mid - 1] + votes[mid]) / 2;
+        alert(`Médiane des votes : ${result}`);
+      } else if (rules === 'majorite') {
+        const counts = {};
+        votes.forEach(vote => counts[vote] = (counts[vote] || 0) + 1);
+        result = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+        alert(`Majorité des votes : ${result}`);
+      }
+    }
+
+    // Enregistrer le résultat pour la tâche actuelle
+    results.push({
+      tache: backlog[currentIndex],
+      difficulte: result
+    });
+
+    // Valide ou non la fonctionnalité
+    if (result >= 5 || rules !== 'unanimite') {
+      alert("Fonctionnalité validée !");
+      currentIndex++;
+      votes = [];
+      cafeVotes = 0;
+      firstRound = true;
+
+      if (currentIndex < backlog.length) {
+        alert("Tâche suivante !");
+        loadTask();
+      } else {
+        alert("Vote terminé. Toutes les tâches ont été évaluées !");
+        saveResults();
+      }
+    } else {
+      alert("Fonctionnalité non validée. Recommencez.");
+    }
+  }
+
+  // Fonction pour enregistrer l'état d'avancement du backlog
+  function saveProgress() {
+    const progress = {
+      backlog: backlog.slice(currentIndex),
+      playersNames: players
+    };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(progress));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "json/backlog_progress.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
+
+  // Fonction pour enregistrer les résultats finaux
+  function saveResults() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(results));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "json/backlog_results.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
+
+  // Fonction pour terminer le vote
+  function finishVoting() {
+    alert("Fin de la partie !");
+    localStorage.removeItem('playersNames');
+    localStorage.removeItem('gameRule');
+    localStorage.removeItem('backlog');
+    window.location.href = 'index.html'; // Redirection vers l'accueil
+  }
+
+  // Affiche les pseudos des joueurs
+  function displayPlayers() {
+    const playersList = document.getElementById('playersList');
+    players.forEach((player, index) => {
+      const div = document.createElement('div');
+      div.className = 'player-card';
+      div.innerHTML = `
+        <p>${player}</p>
+      `;
+      playersList.appendChild(div);
+    });
+  }
+
+  // Fonction pour envoyer un message dans l'espace de discussion
+  function sendMessage() {
+    const message = document.getElementById('chatMessage').value;
+    if (message.trim() !== '') {
+      const chatBox = document.getElementById('chatBox');
+      const messageDiv = document.createElement('div');
+      messageDiv.textContent = message;
+      chatBox.appendChild(messageDiv);
+      document.getElementById('chatMessage').value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  }
+
+  loadTask(); // Charge la première tâche
+  displayPlayers(); // Affiche les pseudos des joueurs
+</script>
+
+</body>
+</html>
