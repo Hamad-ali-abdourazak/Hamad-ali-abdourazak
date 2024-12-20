@@ -27,7 +27,7 @@ Bienvenue sur Planning Poker, une application web pour estimer les tâches en é
 Clonez le dépôt GitHub sur votre machine locale :
 
 ```bash
-git clone https://github.com/Hamad-ali-abdourazak/planning-poker.git
+git clone https://github.com/Hamad-ali-abdourazak/Projet-Poker.git
 Étape 2 : Lancer l'application
 1.	Ouvrez le fichier index.html dans votre navigateur.
 2.	Optionnel : Installez l'extension Live Server pour votre éditeur de code (par exemple Visual Studio Code) afin de lancer l'application en local.
